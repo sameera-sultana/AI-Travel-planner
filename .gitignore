@@ -1,0 +1,40 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environment
+venv/
+.venv/
+
+# Streamlit config and cache
+.streamlit/
+.streamlit/secrets.toml
+
+# Environment variables
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Compiled files
+*.pickle
+*.pkl
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Project specific (optional)
+test_apis.py
+test_app.py
+
+

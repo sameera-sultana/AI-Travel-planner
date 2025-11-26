@@ -1,0 +1,20 @@
+streamlit
+requests
+python-dotenv
+pydantic<2
+typing-extensions
+
+# LangChain ecosystem
+langchain>=0.2.12
+langchain-core>=0.2.35
+langchain-google-genai>=1.0.3
+langgraph
+google-generativeai>=0.7.0
+google-ai-generativelanguage>=0.6.0
+
+# Utilities
+pandas
+plotly
+folium
+streamlit-folium
+pydeck
