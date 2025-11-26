@@ -17,13 +17,6 @@ A smart travel planning assistant built with Python, Streamlit, and AI models to
 🎯 Personalized Based on Preferences
 
 
-🛠️ Tech Stack:
-Component	Technology
-Frontend	Streamlit
-Backend Logic	Python
-AI Model	Gemini/OpenAI (depending on config)
-APIs	Amadeus / Google Places / (optional fallback mock data)
-Mapping	Folium + Streamlit-Folium
 
 📦 Installation
 git clone <repo_url>
@@ -38,12 +31,6 @@ Create a file:
 
 .streamlit/secrets.toml
 
-
-Add:
-
-GOOGLE_API_KEY = "your-key"
-AMADEUS_API_KEY = "your-key"
-AMADEUS_API_SECRET = "your-secret"
 
 ▶️ Run the App
 streamlit run app.py
