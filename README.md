@@ -17,7 +17,7 @@ A smart travel planning assistant built with Python, Streamlit, and AI models to
 🎯 Personalized Based on Preferences
 
 
-🛠️ Tech Stack
+🛠️ Tech Stack:
 Component	Technology
 Frontend	Streamlit
 Backend Logic	Python

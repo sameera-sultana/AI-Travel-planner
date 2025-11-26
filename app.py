@@ -521,7 +521,7 @@ class TravelPlannerApp:
             folium_static(m, width=800, height=500)
             
         except Exception as e:
-            st.info("Map visualization would show your route and points of interest here.")
+            st.info("Map visualization would show your route and points of interest here. ")
             
         # Route information
         route_info = plan['travel_data'].get('route_info', {})

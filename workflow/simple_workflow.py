@@ -188,7 +188,7 @@ class SimpleTravelWorkflow:
         return {
             "total_cost": budget_analysis.get('total_estimated_cost', user_input.get('budget', 1000) * 0.8),
             "budget_status": budget_analysis.get('budget_status', 'within_budget'),
-            "trip_duration": len(itinerary.get('structured_itinerary', [])),
+            "trip_duration": len(itinerary.get('structured_itinerary ', [])),
             "main_attractions": len(travel_data.get('attractions', [])),
             "travel_ready": budget_analysis.get('budget_status', 'within_budget') == 'within_budget',
             "confidence_score": 0.85

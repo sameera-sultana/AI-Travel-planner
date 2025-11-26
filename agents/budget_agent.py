@@ -33,7 +33,7 @@ class BudgetAgent:
         Estimated Total Cost: ${total_cost:.2f}
         Budget Status: {budget_status.upper()}
         
-        Travel Options:
+        Travel Options :
         {json.dumps(travel_options, indent=2)}
         
         Provide:

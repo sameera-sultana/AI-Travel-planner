@@ -45,6 +45,6 @@ def validate_travel_input(user_input: Dict) -> List[str]:
         errors.append("Invalid date format")
     
     if user_input.get('budget', 0) < 100:
-        errors.append("Budget must be at least $100")
+        errors.append("Budget must be at least $100.")
     
     return errors

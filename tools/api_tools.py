@@ -326,7 +326,7 @@ class RealAPITools:
     
     # Improved helper methods with better fallbacks
     def _get_fallback_flights(self, origin: str, destination: str, date: str, budget: float) -> List[Dict]:
-        """Provide realistic fallback flight data"""
+        """Provide realistic fallback flights data"""
         print(f"🔄 Generating realistic fallback flights for {origin} → {destination}")
         
         airlines = ["Air France", "Delta", "United", "British Airways", "Emirates"]
