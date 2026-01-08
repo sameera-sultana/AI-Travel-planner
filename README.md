@@ -1,6 +1,8 @@
 ✈️ AI Travel Planner
 
-A smart travel planning assistant built with Python, Streamlit, and AI models to generate personalized itineraries, recommend flights, hotels, places, and provide a complete travel experience — all in a single app.
+Designed and implemented a Generative AI–powered travel planning system that leverages Large Language Models (LLMs) to perform multi-step reasoning, personalized content generation, and conversational assistance. The application uses Google Gemini LLM orchestrated through LangChain and LangGraph workflows to autonomously generate itineraries, analyze budgets, recommend travel options, and interact with users via a contextual AI chat interface.
+
+The system demonstrates real-world GenAI usage, including prompt engineering, agent-based orchestration, tool calling, memory handling, and fallback mechanisms.
 
 🚀 Features
 
@@ -16,7 +18,7 @@ A smart travel planning assistant built with Python, Streamlit, and AI models to
 
 🎯 Personalized Based on Preferences
 
-
+Tech Stack: Python, Streamlit, Google Gemini (LLM), LangChain, LangGraph, Pydantic, Plotly, Folium, Pandas, REST APIs
 
 📦 Installation
 git clone <repo_url>
