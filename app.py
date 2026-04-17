@@ -69,7 +69,7 @@ st.markdown("""
 
 class TravelPlannerApp:
     def __init__(self):
-        # Get Google API key from secrets or use mock mode
+        # Get Google API key from secrets 
         self.google_api_key = self._get_api_key()
         self.workflow = TravelWorkflow(self.google_api_key)
         self.chat_agent = ChatAgent(self.google_api_key)
@@ -85,7 +85,7 @@ class TravelPlannerApp:
     def _get_api_key(self):
         """Get API key from secrets or use mock mode"""
         try:
-            # Try to get from Streamlit secrets
+           
             api_key = st.secrets.get("GOOGLE_API_KEY")
             if api_key and api_key != "your_google_api_key_here" and len(api_key) > 10:
                 st.success("🔑 Real-time APIs Connected")
@@ -497,7 +497,7 @@ class TravelPlannerApp:
             st.write("• Book in advance for better deals")
             st.write("• Consider traveling during off-peak seasons")
             st.write("• Look for package deals")
-    
+
     def _render_map(self, plan):
         """Render map visualization"""
         st.subheader("🗺️ Travel Map")

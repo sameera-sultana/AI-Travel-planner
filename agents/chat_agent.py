@@ -1,107 +1,122 @@
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Dict, Any, List
-import json
+import hashlib
+from datetime import datetime, timedelta
 
 class ChatAgent:
     def __init__(self, google_api_key: str):
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash-lite",
             google_api_key=google_api_key,
             temperature=0.7
         )
         self.system_message = SystemMessage(content="""
-        You are a friendly and knowledgeable travel companion assistant. You help users with:
-        - Answering questions about their travel plans
-        - Providing additional information about destinations
-        - Suggesting modifications to itineraries
-        - Offering travel tips and advice
-        - Helping with travel-related concerns
-        
-        Be conversational, helpful, and maintain context of their current travel plan.
-        Always be positive and encouraging about their travel adventures!
+        You are a friendly travel companion assistant. Help users with travel questions,
+        destination info, itinerary modifications, and travel tips. Be conversational and helpful.
         """)
         self.conversation_history = []
+        self.cache = {}  # Cache for similar questions
     
     def chat(self, user_message: str, travel_context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Handle chat conversation with travel context"""
+        """Handle chat conversation with caching"""
         
-        # Build context-aware prompt
-        context_str = ""
-        if travel_context:
-            context_str = f"""
-            Current Travel Context:
-            Destination: {travel_context.get('destination', 'Not specified')}
-            Dates: {travel_context.get('start_date', 'Not specified')} to {travel_context.get('end_date', 'Not specified')}
-            Budget: ${travel_context.get('budget', 'Not specified')}
-            Preferences: {', '.join(travel_context.get('preferences', []))}
-            """
+        # Check cache for identical question with same context
+        cache_key = self._get_cache_key(user_message, travel_context)
+        if cache_key in self.cache:
+            cached_time, cached_result = self.cache[cache_key]
+            if datetime.now() - cached_time < timedelta(minutes=10):
+                print("💬 Using cached chat response")
+                return cached_result
         
-        prompt = f"""
-        {context_str}
+        # Build context
+        context_str = self._build_context(travel_context)
         
-        User Question: {user_message}
-        
-        Provide a helpful, friendly response considering their travel context.
-        If they ask about modifying their itinerary or getting more suggestions, 
-        provide specific, actionable advice.
-        """
-        
-        # Build message history
+        # Build messages with history
         messages = [self.system_message]
-        
-        # Add last few conversation turns for context (limit to prevent token overflow)
-        for msg in self.conversation_history[-6:]:  # Last 3 exchanges
-            messages.append(msg)
-        
-        messages.append(HumanMessage(content=prompt))
+        messages.extend(self.conversation_history[-6:])  # Last 3 exchanges
+        messages.append(HumanMessage(content=f"{context_str}\n\nUser: {user_message}"))
         
         # Get response
-        response = self.llm.invoke(messages)
-        
-        # Update conversation history
-        self.conversation_history.extend([
-            HumanMessage(content=user_message),
-            AIMessage(content=response.content)
-        ])
-        
-        # Keep history manageable
-        if len(self.conversation_history) > 20:
-            self.conversation_history = self.conversation_history[-20:]
-        
-        return {
-            "response": response.content,
-            "suggested_actions": self._extract_suggested_actions(response.content),
-            "needs_followup": self._check_followup_needed(user_message)
-        }
+        try:
+            response = self.llm.invoke(messages)
+            result = {
+                "response": response.content,
+                "suggested_actions": self._extract_actions(response.content),
+                "needs_followup": self._needs_followup(user_message)
+            }
+            
+            # Cache result
+            self.cache[cache_key] = (datetime.now(), result)
+            
+            # Update history
+            self.conversation_history.extend([
+                HumanMessage(content=user_message),
+                AIMessage(content=response.content)
+            ])
+            
+            # Keep last 20 messages
+            if len(self.conversation_history) > 20:
+                self.conversation_history = self.conversation_history[-20:]
+            
+            return result
+            
+        except Exception as e:
+            print(f"⚠️ Chat error: {e}")
+            return {
+                "response": "I'm having trouble connecting. Please try again in a moment.",
+                "suggested_actions": [],
+                "needs_followup": False
+            }
     
-    def _extract_suggested_actions(self, response: str) -> List[str]:
-        """Extract suggested actions from chat response"""
+    def _get_cache_key(self, user_message: str, travel_context: Dict) -> str:
+        """Generate cache key"""
+        context_hash = ""
+        if travel_context:
+            context_hash = f"{travel_context.get('destination', '')}_{travel_context.get('budget', '')}"
+        return hashlib.md5(f"{user_message}_{context_hash}".encode()).hexdigest()
+    
+    def _build_context(self, travel_context: Dict) -> str:
+        """Build context string"""
+        if not travel_context:
+            return ""
+        
+        return f"""
+        Current Trip:
+        • Destination: {travel_context.get('destination', 'Unknown')}
+        • Dates: {travel_context.get('start_date', '?')} to {travel_context.get('end_date', '?')}
+        • Budget: ${travel_context.get('budget', '?')}
+        • Preferences: {', '.join(travel_context.get('preferences', []))}
+        """
+    
+    def _extract_actions(self, response: str) -> List[str]:
+        """Extract suggested actions from response"""
         actions = []
+        response_lower = response.lower()
         
-        # Simple keyword-based action extraction
-        if "itinerary" in response.lower() and "change" in response.lower():
-            actions.append("modify_itinerary")
-        if "hotel" in response.lower() or "accommodation" in response.lower():
-            actions.append("search_hotels")
-        if "flight" in response.lower() or "transport" in response.lower():
-            actions.append("search_transport")
-        if "weather" in response.lower():
-            actions.append("check_weather")
-        if "attraction" in response.lower() or "place" in response.lower():
-            actions.append("find_attractions")
+        action_map = {
+            "itinerary": "modify_itinerary",
+            "hotel": "search_hotels",
+            "accommodation": "search_hotels",
+            "flight": "search_flights",
+            "weather": "check_weather",
+            "attraction": "find_attractions",
+            "place": "find_attractions"
+        }
         
-        return actions
+        for keyword, action in action_map.items():
+            if keyword in response_lower:
+                actions.append(action)
+        
+        return list(set(actions))[:3]  # Unique, max 3 actions
     
-    def _check_followup_needed(self, user_message: str) -> bool:
-        """Check if the user message likely needs follow-up"""
-        followup_keywords = [
-            "help", "problem", "issue", "change", "modify", 
-            "alternative", "instead", "better", "recommend"
-        ]
-        
-        return any(keyword in user_message.lower() for keyword in followup_keywords)
+    def _needs_followup(self, user_message: str) -> bool:
+        """Check if follow-up needed"""
+        keywords = ["help", "problem", "change", "modify", "alternative", "better", "recommend"]
+        return any(kw in user_message.lower() for kw in keywords)
     
     def clear_history(self):
-        """Clear conversation history"""
+        """Clear conversation history and cache"""
         self.conversation_history = []
+        self.cache.clear()
+        print("💬 Chat history cleared")
